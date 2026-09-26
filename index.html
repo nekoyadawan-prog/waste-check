@@ -137,56 +137,99 @@
       font-weight: bold;
     }
     
+    /* リアルなプライスカード再現 */
     .price-card {
       background: #fff;
-      border: 2px solid #333;
-      border-radius: 6px;
-      padding: 6px 10px;
+      border: 2px solid #222;
+      border-radius: 4px;
+      padding: 8px 10px 6px;
       text-align: left;
-      font-family: 'Courier New', Courier, monospace;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
       margin-top: 6px;
-      box-shadow: 2px 2px 0px #ccc;
+      box-shadow: 2px 2px 0px #aaa;
     }
     .price-card-title {
-      font-size: 13.5px;
+      font-size: 15px;
       font-weight: bold;
       color: #000;
-      border-bottom: 1px dashed #ccc;
-      padding-bottom: 3px;
+      line-height: 1.25;
       margin-bottom: 4px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .price-card-price {
-      font-size: 17px;
+    .price-card-middle {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 2px;
+    }
+    .price-card-keito {
+      font-size: 11px;
       font-weight: bold;
+      color: #333;
+    }
+    .price-card-price {
+      font-size: 22px;
+      font-weight: 900;
+      color: #000;
+      font-style: italic;
+      line-height: 1;
+    }
+    .price-card-subprice {
+      font-size: 11px;
       text-align: right;
       color: #000;
+      margin-bottom: 4px;
     }
     .price-card-code {
       font-size: 11px;
+      font-family: 'Courier New', Courier, monospace;
       display: flex;
       justify-content: space-between;
-      color: #333;
-      margin-top: 4px;
-      background: #f0f0f0;
-      padding: 2px 6px;
-      border-radius: 4px;
+      align-items: center;
+      color: #000;
+      padding: 1px 0;
     }
     .rule-highlight {
       font-weight: bold;
       color: #d9534f;
-      font-size: 13px;
+      font-size: 12px;
       border: 1.5px solid #d9534f;
       padding: 0 4px;
       border-radius: 3px;
       background: #ffe6e6;
     }
 
+    /* CSSリアルバーコード再現 */
+    .barcode-lines {
+      height: 22px;
+      width: 100%;
+      margin-top: 2px;
+      background: repeating-linear-gradient(
+        90deg,
+        #000 0px,
+        #000 2px,
+        #fff 2px,
+        #fff 4px,
+        #000 4px,
+        #000 5px,
+        #fff 5px,
+        #fff 8px,
+        #000 8px,
+        #000 11px,
+        #fff 11px,
+        #fff 13px,
+        #000 13px,
+        #000 14px,
+        #fff 14px,
+        #fff 17px
+      );
+    }
+
     .explanation-box {
-      min-height: 56px;
-      max-height: 75px;
+      min-height: 60px;
+      max-height: 80px;
       background: #fff;
       border: 2px solid #ddd;
       border-radius: 8px;
@@ -245,6 +288,23 @@
     .btn-out { background-color: #fd7e14; flex: 1; font-size: 15px; }
     .btn-missed { background-color: #dc3545; width: 100%; font-size: 15px; padding: 8px 8px; }
 
+    .next-btn {
+      background: linear-gradient(135deg, #0066cc, #004080);
+      color: white;
+      width: 100%;
+      font-size: 16px;
+      padding: 12px 8px;
+      border-radius: 8px;
+      display: none;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+
     .score-board {
       margin-top: 6px;
       font-size: 16px;
@@ -260,7 +320,7 @@
     .overlay {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(13, 27, 42, 0.6);
+      background: rgba(13, 27, 42, 0.65);
       color: white;
       display: flex;
       flex-direction: column;
@@ -373,7 +433,6 @@
       color: #222;
     }
 
-    /* ルール説明ボックスの拡張 */
     .rule-box-large {
       background: rgba(0, 0, 0, 0.9);
       border: 2px solid #ffcc00;
@@ -430,21 +489,6 @@
     .rule-box-large li {
       margin-bottom: 3px;
     }
-
-    .back-text-btn {
-      background: rgba(0, 0, 0, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      color: #fff;
-      font-size: 12px;
-      padding: 8px 18px;
-      border-radius: 15px;
-      cursor: pointer;
-      margin-top: 4px;
-      box-shadow: none;
-    }
-    .back-text-btn:hover {
-      background: rgba(0, 0, 0, 0.9);
-    }
   </style>
 </head>
 <body>
@@ -454,11 +498,6 @@
   <div class="overlay" id="overlay-main">
     <div class="fullscreen-bg-box">
       <img src="title.png" alt="Background" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 300 300\'><rect width=\'300\' height=\'300\' fill=\'%230d1b2a\'/><circle cx=\'150\' cy=\'120\' r=\'50\' fill=\'%23ffdbac\'/><text x=\'150\' y=\'220\' font-size=\'18\' font-weight=\'bold\' fill=\'%23ff4d4d\' text-anchor=\'middle\'>DISCARD CHECKER</text></svg>';">
-    </div>
-
-    <!-- Title Screen -->
-    <div class="screen-container" id="screen-title" style="justify-content: flex-start; padding-top: 25px;">
-      <button class="big-start-btn" onclick="showModeSelect()">START GAME</button>
     </div>
 
     <!-- Result Screen -->
@@ -476,12 +515,12 @@
         <div class="commentary-text" id="commentary-text">Loading feedback...</div>
       </div>
 
-      <button class="big-start-btn" onclick="showModeSelectFromResult()" style="font-size: 15px; padding: 12px; margin-top: 4px;">TRY AGAIN ➔</button>
+      <button class="big-start-btn" onclick="showModeSelect()" style="font-size: 15px; padding: 12px; margin-top: 4px;">PLAY AGAIN ➔</button>
     </div>
 
-    <!-- Mode Select Screen (Large Rule Box, No Rankings) -->
-    <div class="screen-container" id="screen-mode" style="display: none; justify-content: flex-start; padding-top: 6px; padding-bottom: 10px;">
-      <h2 style="font-size: 15px; color: #ffcc00; margin: 0 0 6px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.9);">Select Difficulty to Start</h2>
+    <!-- Mode Select Screen (Initial Screen) -->
+    <div class="screen-container" id="screen-mode" style="display: flex; justify-content: flex-start; padding-top: 6px; padding-bottom: 10px;">
+      <h2 style="font-size: 16px; color: #ffcc00; margin: 0 0 6px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.9);">Select Difficulty to Start</h2>
       
       <div class="mode-btn-group">
         <button class="mode-btn btn-trainee-mode" onclick="startGame('trainee')">TRAINEE<br><small style="font-size:9.5px; font-weight:normal;">(No Time Limit)</small></button>
@@ -511,8 +550,6 @@
           </ul>
         </div>
       </div>
-
-      <button class="back-text-btn" onclick="showTitleScreen()">◀ Back to Title</button>
     </div>
   </div>
 
@@ -536,14 +573,21 @@
       <span class="info-val exp-date" id="item-exp">YYYY/MM/DD</span>
     </div>
 
+    <!-- 本物のローソンプライスカード風デザイン -->
     <div class="price-card">
       <div class="price-card-title" id="item-name">Item Name</div>
-      <div class="price-card-price" id="item-price">¥100 <span style="font-size:11px; font-weight:normal;">(Tax incl. ¥108)</span></div>
+      <div class="price-card-middle">
+        <span class="price-card-keito">軽 34</span>
+        <span class="price-card-price" id="item-price">¥100</span>
+      </div>
+      <div class="price-card-subprice" id="item-tax-price">(Tax incl. ¥108)</div>
       <div class="price-card-code">
         <span>-030</span>
-        <span>4901939616187</span>
+        <span id="item-jan">4901939616187</span>
         <span class="rule-highlight" id="price-card-rule">-010</span>
       </div>
+      <!-- バーコード描画 -->
+      <div class="barcode-lines"></div>
     </div>
   </div>
 
@@ -553,11 +597,14 @@
   </div>
 
   <div class="btn-container">
-    <div class="btn-row">
+    <div class="btn-row" id="action-btn-row">
       <button class="btn-safe" id="btn-safe" onclick="checkAnswer('SAFE')">SAFE<br><small style="font-size:10px;">(Keep on Shelf)</small></button>
       <button class="btn-out" id="btn-out" onclick="checkAnswer('OUT')">DISCARD TODAY!</button>
     </div>
     <button class="btn-missed" id="btn-missed" onclick="checkAnswer('MISSED')">OVERDUE!<br><small style="font-size:10px;">(Missed Discard / Past Date)</small></button>
+    
+    <!-- Tap to Next Button -->
+    <button class="next-btn" id="btn-next" onclick="nextQuestion()">NEXT (Tap to Continue) ➔</button>
   </div>
 
   <div class="score-board" id="score-board">
@@ -587,6 +634,7 @@
   let isDesert = false;
   let isLongTermItem = false;
   let isProcessing = false;
+  let isAwaitingNext = false;
   
   let currentMaxTime = 6.0;
   let timeLeft = currentMaxTime;
@@ -612,26 +660,26 @@
   }
 
   const standardPool = [
-    { name: "Uchi Café Premium Roll Cake", price: 198, rules: [1], isDesert: true },
-    { name: "Uchi Café Doramocchi", price: 192, rules: [1], isDesert: true },
-    { name: "Uchi Café Baschee", price: 225, rules: [1], isDesert: true },
-    { name: "Uchi Café Giant Cream Puff", price: 138, rules: [1], isDesert: true },
+    { name: "Uchi Café Premium Roll Cake", price: 198, rules: [1], jan: "4901939616187", isDesert: true },
+    { name: "Uchi Café Doramocchi", price: 192, rules: [1], jan: "4901234567890", isDesert: true },
+    { name: "Uchi Café Baschee", price: 225, rules: [1], jan: "4909876543210", isDesert: true },
+    { name: "Uchi Café Giant Cream Puff", price: 138, rules: [1], jan: "4901111222233", isDesert: true },
 
-    { name: "LS Potato Salad", price: 148, rules: [1, 2, 3], isDesert: false },
-    { name: "LS Grilled Mackerel", price: 258, rules: [2, 3], isDesert: false },
-    { name: "LS Prosciutto Loin", price: 188, rules: [2, 3, 5], isDesert: false },
-    { name: "LS Drinkable Yogurt", price: 138, rules: [2, 3], isDesert: false },
+    { name: "LS Potato Salad", price: 148, rules: [1, 2, 3], jan: "4902222333344", isDesert: false },
+    { name: "LS Grilled Mackerel", price: 258, rules: [2, 3], jan: "4903333444455", isDesert: false },
+    { name: "LS Prosciutto Loin", price: 188, rules: [2, 3, 5], jan: "4904444555566", isDesert: false },
+    { name: "LS Drinkable Yogurt", price: 138, rules: [2, 3], jan: "4905555666677", isDesert: false },
 
-    { name: "LS Green Tea 600ml", price: 108, rules: [5, 10, 15], isDesert: false },
-    { name: "LS Honey Milk Donut", price: 108, rules: [10, 15, 20], isDesert: false },
-    { name: "LS Rice Seasoning (Egg)", price: 100, rules: [15, 20], isDesert: false }
+    { name: "LS Green Tea 600ml", price: 108, rules: [5, 10, 15], jan: "4906666777788", isDesert: false },
+    { name: "LS Honey Milk Donut", price: 108, rules: [10, 15, 20], jan: "4901939616187", isDesert: false },
+    { name: "LS Rice Seasoning (Egg)", price: 100, rules: [15, 20], jan: "4907777888899", isDesert: false }
   ];
 
   const longTermPool = [
-    { name: "LS Salmon Flakes", price: 298, rules: [30], isDesert: false, isLongTerm: true },
-    { name: "LS Strawberry Jam 150g", price: 218, rules: [30], isDesert: false, isLongTerm: true },
-    { name: "LS Blueberry Jam", price: 218, rules: [30], isDesert: false, isLongTerm: true },
-    { name: "LS Mayonnaise 500g", price: 248, rules: [30], isDesert: false, isLongTerm: true }
+    { name: "LS Salmon Flakes", price: 298, rules: [30], jan: "4908888999900", isDesert: false, isLongTerm: true },
+    { name: "LS Strawberry Jam 150g", price: 218, rules: [30], jan: "4909999000011", isDesert: false, isLongTerm: true },
+    { name: "LS Blueberry Jam", price: 218, rules: [30], jan: "4900000111122", isDesert: false, isLongTerm: true },
+    { name: "LS Mayonnaise 500g", price: 248, rules: [30], jan: "4901111333344", isDesert: false, isLongTerm: true }
   ];
 
   const baseToday = new Date();
@@ -698,20 +746,9 @@
   }
 
   function showModeSelect() {
-    document.getElementById('screen-title').style.display = 'none';
     document.getElementById('screen-result').style.display = 'none';
     document.getElementById('screen-mode').style.display = 'flex';
-  }
-
-  function showModeSelectFromResult() {
-    document.getElementById('screen-result').style.display = 'none';
-    document.getElementById('screen-mode').style.display = 'flex';
-  }
-
-  function showTitleScreen() {
-    document.getElementById('screen-mode').style.display = 'none';
-    document.getElementById('screen-result').style.display = 'none';
-    document.getElementById('screen-title').style.display = 'flex';
+    document.getElementById('overlay-main').style.display = 'flex';
   }
 
   function startGame(mode) {
@@ -722,6 +759,7 @@
     lives = 2;
     questionCount = 0;
     isProcessing = false;
+    isAwaitingNext = false;
     
     if (currentMode === 'trainee') {
       document.getElementById('score-board').style.display = 'none';
@@ -749,7 +787,7 @@
     clearInterval(timerInterval);
     if (currentMode !== 'trainee') {
       timerInterval = setInterval(() => {
-        if (!isProcessing) {
+        if (!isProcessing && !isAwaitingNext) {
           timeLeft -= 0.1;
           const percent = (timeLeft / currentMaxTime) * 100;
           const bar = document.getElementById('timer-bar');
@@ -757,7 +795,6 @@
 
           if (timeLeft <= 0) {
             isProcessing = true;
-            setButtonsDisabled(true);
             handleMistake("⏰ Time's Up!");
           }
         }
@@ -779,20 +816,21 @@
 
     const overlay = document.getElementById('overlay-main');
     overlay.style.display = 'flex';
-    document.getElementById('screen-title').style.display = 'none';
     document.getElementById('screen-mode').style.display = 'none';
     document.getElementById('screen-result').style.display = 'flex';
   }
 
-  function setButtonsDisabled(disabled) {
-    document.getElementById('btn-safe').disabled = disabled;
-    document.getElementById('btn-out').disabled = disabled;
-    document.getElementById('btn-missed').disabled = disabled;
+  function toggleButtons(showNext) {
+    document.getElementById('action-btn-row').style.display = showNext ? 'none' : 'flex';
+    document.getElementById('btn-missed').style.display = showNext ? 'none' : 'block';
+    document.getElementById('btn-next').style.display = showNext ? 'block' : 'none';
   }
 
   function generateQuestion() {
     isProcessing = false;
-    setButtonsDisabled(false);
+    isAwaitingNext = false;
+    toggleButtons(false);
+
     questionCount++;
 
     document.getElementById('result-title').innerText = `Question ${questionCount}`;
@@ -831,7 +869,9 @@
     if (bar) bar.style.width = '100%';
 
     document.getElementById('item-name').innerText = item.name + (isDesert ? " ⚡Fast!" : "");
-    document.getElementById('item-price').innerHTML = `¥${item.price} <span style="font-size:11px; font-weight:normal;">(Tax incl. ¥${Math.floor(item.price * 1.08)})</span>`;
+    document.getElementById('item-price').innerText = `¥${item.price}`;
+    document.getElementById('item-tax-price').innerText = `(Tax incl. ¥${Math.floor(item.price * 1.08)})`;
+    document.getElementById('item-jan').innerText = item.jan || "4901939616187";
     
     const ruleText = `-0${ruleDays < 10 ? '0' + ruleDays : ruleDays}`;
     document.getElementById('price-card-rule').innerText = ruleText;
@@ -902,17 +942,13 @@
 
     updateComboUI();
 
-    if (lives <= 0) {
-      setTimeout(endGame, 1500);
-    } else {
-      setTimeout(generateQuestion, 1600);
-    }
+    isAwaitingNext = true;
+    toggleButtons(true);
   }
 
   function checkAnswer(userChoice) {
-    if ((timeLeft <= 0 && currentMode !== 'trainee') || isProcessing) return;
+    if ((timeLeft <= 0 && currentMode !== 'trainee') || isProcessing || isAwaitingNext) return;
     isProcessing = true;
-    setButtonsDisabled(true);
 
     const titleEl = document.getElementById('result-title');
     const textEl = document.getElementById('result-text');
@@ -945,9 +981,21 @@
       textEl.innerText = correctReason;
 
       updateComboUI();
-      setTimeout(generateQuestion, 1500);
+      
+      isAwaitingNext = true;
+      toggleButtons(true);
     } else {
       handleMistake("❌ Incorrect...");
+    }
+  }
+
+  function nextQuestion() {
+    if (!isAwaitingNext) return;
+    
+    if (lives <= 0) {
+      endGame();
+    } else {
+      generateQuestion();
     }
   }
 </script>
