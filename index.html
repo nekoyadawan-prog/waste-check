@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lawson Expiration Checker</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      user-select: none;
+    }
+    body {
+      background-color: #1a2536;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 10px;
+    }
+    .game-card {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+      padding: 14px 16px;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #0066cc, #004080);
+      color: white;
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 16px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 10px rgba(0, 102, 204, 0.3);
+    }
+    
+    /* Status Bar */
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 10px 0 8px;
+      gap: 6px;
+    }
+    .timer-container {
+      flex: 1;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .timer-bar {
+      background: linear-gradient(90deg, #28a745, #ffc107, #dc3545);
+      height: 16px;
+      width: 100%;
+      border-radius: 8px;
+      transition: width 0.1s linear;
+    }
+    
+    .exit-trainee-btn {
+      background: linear-gradient(135deg, #ff4d4d, #cc0000);
+      color: white;
+      border: none;
+      font-size: 12px;
+      font-weight: bold;
+      width: 100%;
+      height: 100%;
+      padding: 0 6px;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(220, 53, 69, 0.4);
+      transition: transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      white-space: nowrap;
+    }
+    .exit-trainee-btn:active {
+      transform: scale(0.95);
+    }
+
+    .lives-display {
+      font-size: 16px;
+      letter-spacing: 1px;
+      background: #f0f0f0;
+      padding: 2px 6px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+    }
+    .combo-badge {
+      background: #ff9800;
+      color: white;
+      font-weight: bold;
+      padding: 3px 8px;
+      border-radius: 16px;
+      font-size: 12px;
+      min-width: 80px;
+      box-shadow: 0 2px 6px rgba(255, 152, 0, 0.4);
+      transition: transform 0.2s;
+    }
+    .combo-badge.active {
+      transform: scale(1.1);
+      background: #e91e63;
+    }
+
+    .info-panel {
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+      border-radius: 10px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      text-align: left;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13.5px;
+      margin-bottom: 4px;
+    }
+    .info-val {
+      font-weight: bold;
+      font-size: 15px;
+    }
+    .exp-date {
+      color: #d9534f;
+      font-size: 17px;
+      font-weight: bold;
+    }
+    
+    .price-card {
+      background: #fff;
+      border: 2px solid #333;
+      border-radius: 6px;
+      padding: 6px 10px;
+      text-align: left;
+      font-family: 'Courier New', Courier, monospace;
+      margin-top: 6px;
+      box-shadow: 2px 2px 0px #ccc;
+    }
+    .price-card-title {
+      font-size: 13.5px;
+      font-weight: bold;
+      color: #000;
+      border-bottom: 1px dashed #ccc;
+      padding-bottom: 3px;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .price-card-price {
+      font-size: 17px;
+      font-weight: bold;
+      text-align: right;
+      color: #000;
+    }
+    .price-card-code {
+      font-size: 11px;
+      display: flex;
+      justify-content: space-between;
+      color: #333;
+      margin-top: 4px;
+      background: #f0f0f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .rule-highlight {
+      font-weight: bold;
+      color: #d9534f;
+      font-size: 13px;
+      border: 1.5px solid #d9534f;
+      padding: 0 4px;
+      border-radius: 3px;
+      background: #ffe6e6;
+    }
+
+    .explanation-box {
+      min-height: 56px;
+      max-height: 75px;
+      background: #fff;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      padding: 6px 8px;
+      margin-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    .result-title {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 2px;
+    }
+    .result-text {
+      font-size: 12px;
+      color: #333;
+      line-height: 1.3;
+      text-align: center;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .btn-container {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .btn-row {
+      display: flex;
+      gap: 8px;
+    }
+    button {
+      padding: 10px 8px;
+      font-size: 14px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+      transition: transform 0.1s, opacity 0.2s;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    }
+    button:active {
+      transform: scale(0.96);
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .btn-safe { background-color: #28a745; flex: 1; }
+    .btn-out { background-color: #fd7e14; flex: 1; font-size: 15px; }
+    .btn-missed { background-color: #dc3545; width: 100%; font-size: 15px; padding: 8px 8px; }
+
+    .score-board {
+      margin-top: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #0066cc;
+      border-top: 2px solid #eee;
+      padding-top: 6px;
+      display: flex;
+      justify-content: space-between;
+      display: none;
+    }
+
+    .overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(13, 27, 42, 0.6);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+      padding: 14px 12px;
+      overflow-y: auto;
+    }
+    .overlay.hidden {
+      display: none !important;
+    }
+
+    .fullscreen-bg-box {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+    .fullscreen-bg-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.5);
+    }
+
+    .screen-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 400px;
+      z-index: 2;
+    }
+
+    .big-start-btn {
+      background: linear-gradient(135deg, #ff9800, #e91e63);
+      color: white;
+      font-size: 18px;
+      padding: 14px 28px;
+      border-radius: 30px;
+      font-weight: bold;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 6px 20px rgba(233, 30, 99, 0.5);
+      cursor: pointer;
+      border: 2px solid #fff;
+    }
+
+    .mode-btn-group {
+      display: flex;
+      gap: 10px;
+      margin: 8px 0 12px;
+      width: 100%;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: 12px 6px;
+      font-size: 15px;
+      font-weight: bold;
+      border-radius: 12px;
+      line-height: 1.3;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    .btn-trainee-mode { background: #17a2b8; border: 2px solid #5bc0de; }
+    .btn-rookie-mode { background: #28a745; border: 2px solid #5cb85c; }
+
+    .result-score-box {
+      background: rgba(0, 0, 0, 0.88);
+      border: 2px solid #ffcc00;
+      border-radius: 12px;
+      padding: 12px;
+      width: 100%;
+      text-align: center;
+      margin-bottom: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+    .result-score-num {
+      font-size: 32px;
+      font-weight: bold;
+      color: #ffcc00;
+      margin: 4px 0;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+
+    .commentary-card {
+      background: rgba(255, 255, 255, 0.95);
+      color: #111;
+      border-radius: 10px;
+      padding: 10px 12px;
+      width: 100%;
+      margin-bottom: 10px;
+      text-align: left;
+      border-left: 5px solid #ff4d4d;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+    .commentary-title {
+      font-size: 11px;
+      font-weight: bold;
+      color: #d9534f;
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .commentary-text {
+      font-size: 13px;
+      font-weight: bold;
+      line-height: 1.45;
+      color: #222;
+    }
+
+    /* ルール説明ボックスの拡張 */
+    .rule-box-large {
+      background: rgba(0, 0, 0, 0.9);
+      border: 2px solid #ffcc00;
+      border-radius: 12px;
+      padding: 12px 14px;
+      width: 100%;
+      text-align: left;
+      margin-bottom: 12px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+    }
+    .rule-box-large h3 {
+      margin: 0 0 8px 0;
+      font-size: 15px;
+      color: #ffcc00;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,204,0,0.4);
+      padding-bottom: 4px;
+      letter-spacing: 0.5px;
+    }
+    .rule-step {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+    }
+    .rule-step-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: #5bc0de;
+      margin-bottom: 3px;
+    }
+    .rule-formula {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      background: #222;
+      color: #fff;
+      padding: 6px;
+      border-radius: 6px;
+      text-align: center;
+      margin: 4px 0;
+      border: 1px solid #555;
+    }
+    .rule-formula span.highlight {
+      color: #ff6b6b;
+      font-weight: bold;
+    }
+    .rule-box-large ul {
+      margin: 4px 0 0 0;
+      padding-left: 18px;
+      font-size: 12px;
+      line-height: 1.4;
+      color: #eee;
+    }
+    .rule-box-large li {
+      margin-bottom: 3px;
+    }
+
+    .back-text-btn {
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      font-size: 12px;
+      padding: 8px 18px;
+      border-radius: 15px;
+      cursor: pointer;
+      margin-top: 4px;
+      box-shadow: none;
+    }
+    .back-text-btn:hover {
+      background: rgba(0, 0, 0, 0.9);
+    }
+  </style>
+</head>
+<body>
+
+<div class="game-card">
+  <!-- Overlay Screens -->
+  <div class="overlay" id="overlay-main">
+    <div class="fullscreen-bg-box">
+      <img src="title.png" alt="Background" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 300 300\'><rect width=\'300\' height=\'300\' fill=\'%230d1b2a\'/><circle cx=\'150\' cy=\'120\' r=\'50\' fill=\'%23ffdbac\'/><text x=\'150\' y=\'220\' font-size=\'18\' font-weight=\'bold\' fill=\'%23ff4d4d\' text-anchor=\'middle\'>DISCARD CHECKER</text></svg>';">
+    </div>
+
+    <!-- Title Screen -->
+    <div class="screen-container" id="screen-title" style="justify-content: flex-start; padding-top: 25px;">
+      <button class="big-start-btn" onclick="showModeSelect()">START GAME</button>
+    </div>
+
+    <!-- Result Screen -->
+    <div class="screen-container" id="screen-result" style="display: none; justify-content: flex-start; padding-top: 10px;">
+      <h2 style="font-size: 18px; color: #ff4d4d; margin: 0 0 6px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.9);">GAME OVER!</h2>
+      
+      <div class="result-score-box">
+        <div style="font-size: 12px; color: #ccc;">FINAL SCORE</div>
+        <div class="result-score-num" id="final-score-display">0 pt</div>
+        <div style="font-size: 12px; color: #fff;" id="final-combo-display">Max Combo: 0 COMBO</div>
+      </div>
+
+      <div class="commentary-card" id="commentary-card">
+        <div class="commentary-title" id="commentary-title">STORE MANAGER'S FEEDBACK</div>
+        <div class="commentary-text" id="commentary-text">Loading feedback...</div>
+      </div>
+
+      <button class="big-start-btn" onclick="showModeSelectFromResult()" style="font-size: 15px; padding: 12px; margin-top: 4px;">TRY AGAIN ➔</button>
+    </div>
+
+    <!-- Mode Select Screen (Large Rule Box, No Rankings) -->
+    <div class="screen-container" id="screen-mode" style="display: none; justify-content: flex-start; padding-top: 6px; padding-bottom: 10px;">
+      <h2 style="font-size: 15px; color: #ffcc00; margin: 0 0 6px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.9);">Select Difficulty to Start</h2>
+      
+      <div class="mode-btn-group">
+        <button class="mode-btn btn-trainee-mode" onclick="startGame('trainee')">TRAINEE<br><small style="font-size:9.5px; font-weight:normal;">(No Time Limit)</small></button>
+        <button class="mode-btn btn-rookie-mode" onclick="startGame('rookie')">ROOKIE<br><small style="font-size:9.5px; font-weight:normal;">(Timer Gets Faster)</small></button>
+      </div>
+
+      <!-- Expanded & Clear Rules Box -->
+      <div class="rule-box-large">
+        <h3>📖 HOW TO CHECK DISCARD DATES</h3>
+        
+        <div class="rule-step">
+          <div class="rule-step-title">STEP 1: Calculate Discard Date</div>
+          <div class="rule-formula">
+            Expiration Date − <span class="highlight">Bottom-Right Number</span> = <b>Discard Date</b>
+          </div>
+          <div style="font-size:11px; color:#ddd; text-align:center;">
+            Example: Exp Date (Oct 15) − <span style="color:#ff6b6b; font-weight:bold;">-010</span> (10 days) = <b>Oct 5</b>
+          </div>
+        </div>
+
+        <div class="rule-step" style="margin-bottom:0;">
+          <div class="rule-step-title">STEP 2: Compare Discard Date with Today</div>
+          <ul>
+            <li><strong style="color:#ff9800;">DISCARD TODAY (OUT)</strong>: If Today = Discard Date</li>
+            <li><strong style="color:#28a745;">SAFE</strong>: If Today is <i>BEFORE</i> Discard Date</li>
+            <li><strong style="color:#ff4d4d;">OVERDUE (Missed)</strong>: If Today is <i>AFTER</i> Discard Date</li>
+          </ul>
+        </div>
+      </div>
+
+      <button class="back-text-btn" onclick="showTitleScreen()">◀ Back to Title</button>
+    </div>
+  </div>
+
+  <div class="header" id="header-title">Lawson Discard Checker</div>
+  
+  <div class="status-bar">
+    <div class="lives-display" id="lives-display">❤️❤️</div>
+    <div class="timer-container" id="timer-container">
+      <div class="timer-bar" id="timer-bar"></div>
+    </div>
+    <div class="combo-badge" id="combo-badge">0 COMBO</div>
+  </div>
+
+  <div class="info-panel">
+    <div class="info-row">
+      <span>[ Today's Date ]</span>
+      <span class="info-val" id="current-date">YYYY/MM/DD</span>
+    </div>
+    <div class="info-row">
+      <span>[ Exp. Date ]</span>
+      <span class="info-val exp-date" id="item-exp">YYYY/MM/DD</span>
+    </div>
+
+    <div class="price-card">
+      <div class="price-card-title" id="item-name">Item Name</div>
+      <div class="price-card-price" id="item-price">¥100 <span style="font-size:11px; font-weight:normal;">(Tax incl. ¥108)</span></div>
+      <div class="price-card-code">
+        <span>-030</span>
+        <span>4901939616187</span>
+        <span class="rule-highlight" id="price-card-rule">-010</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="explanation-box" id="explanation-box">
+    <div class="result-title" id="result-title" style="color:#888;">Select an action below</div>
+    <div class="result-text" id="result-text"></div>
+  </div>
+
+  <div class="btn-container">
+    <div class="btn-row">
+      <button class="btn-safe" id="btn-safe" onclick="checkAnswer('SAFE')">SAFE<br><small style="font-size:10px;">(Keep on Shelf)</small></button>
+      <button class="btn-out" id="btn-out" onclick="checkAnswer('OUT')">DISCARD TODAY!</button>
+    </div>
+    <button class="btn-missed" id="btn-missed" onclick="checkAnswer('MISSED')">OVERDUE!<br><small style="font-size:10px;">(Missed Discard / Past Date)</small></button>
+  </div>
+
+  <div class="score-board" id="score-board">
+    <span>Score:</span>
+    <span id="score">0</span>
+  </div>
+</div>
+
+<!-- Audio Assets -->
+<audio id="correct-audio" src="correct.mp3" preload="auto"></audio>
+<audio id="bubu-audio" src="bubu.mp3" preload="auto"></audio>
+<audio id="gameover-audio" src="gameover.mp3" preload="auto"></audio>
+<audio id="nani-audio" src="nani.mp3" preload="auto"></audio>
+<audio id="special-correct-audio" src="special-correct.mp3" preload="auto"></audio>
+<audio id="rookie-combo-audio" src="rookie-combo.mp3" preload="auto"></audio>
+
+<script>
+  let score = 0;
+  let combo = 0;
+  let maxCombo = 0;
+  let lives = 2;
+  let questionCount = 0;
+  let currentMode = 'rookie';
+  
+  let correctState = "";
+  let correctReason = "";
+  let isDesert = false;
+  let isLongTermItem = false;
+  let isProcessing = false;
+  
+  let currentMaxTime = 6.0;
+  let timeLeft = currentMaxTime;
+  let timerInterval = null;
+
+  function playSound(type) {
+    const audioIds = {
+      'incorrect': 'bubu-audio',
+      'correct': 'correct-audio',
+      'special-correct': 'special-correct-audio',
+      'rookie-combo': 'rookie-combo-audio',
+      'gameover': 'gameover-audio',
+      'nani': 'nani-audio'
+    };
+    const id = audioIds[type];
+    if (id) {
+      const audioEl = document.getElementById(id);
+      if (audioEl) {
+        audioEl.currentTime = 0;
+        audioEl.play().catch(e => { console.log(e); });
+      }
+    }
+  }
+
+  const standardPool = [
+    { name: "Uchi Café Premium Roll Cake", price: 198, rules: [1], isDesert: true },
+    { name: "Uchi Café Doramocchi", price: 192, rules: [1], isDesert: true },
+    { name: "Uchi Café Baschee", price: 225, rules: [1], isDesert: true },
+    { name: "Uchi Café Giant Cream Puff", price: 138, rules: [1], isDesert: true },
+
+    { name: "LS Potato Salad", price: 148, rules: [1, 2, 3], isDesert: false },
+    { name: "LS Grilled Mackerel", price: 258, rules: [2, 3], isDesert: false },
+    { name: "LS Prosciutto Loin", price: 188, rules: [2, 3, 5], isDesert: false },
+    { name: "LS Drinkable Yogurt", price: 138, rules: [2, 3], isDesert: false },
+
+    { name: "LS Green Tea 600ml", price: 108, rules: [5, 10, 15], isDesert: false },
+    { name: "LS Honey Milk Donut", price: 108, rules: [10, 15, 20], isDesert: false },
+    { name: "LS Rice Seasoning (Egg)", price: 100, rules: [15, 20], isDesert: false }
+  ];
+
+  const longTermPool = [
+    { name: "LS Salmon Flakes", price: 298, rules: [30], isDesert: false, isLongTerm: true },
+    { name: "LS Strawberry Jam 150g", price: 218, rules: [30], isDesert: false, isLongTerm: true },
+    { name: "LS Blueberry Jam", price: 218, rules: [30], isDesert: false, isLongTerm: true },
+    { name: "LS Mayonnaise 500g", price: 248, rules: [30], isDesert: false, isLongTerm: true }
+  ];
+
+  const baseToday = new Date();
+
+  function formatDate(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}/${m}/${d}`;
+  }
+
+  function getModeName(mode) {
+    return mode === 'trainee' ? 'TRAINEE' : 'ROOKIE';
+  }
+
+  function getCommentary(mode, finalScore, maxCombo, qCount) {
+    if (mode === 'trainee') {
+      if (qCount <= 3) {
+        return {
+          title: "Manager's Encouragement",
+          text: "Great start! Take your time to practice calculating the discount dates without any pressure!"
+        };
+      } else {
+        return {
+          title: "Manager's Advice",
+          text: "Good job! You are getting the hang of subtracting the days. Ready to try 'Rookie Mode' with a timer?"
+        };
+      }
+    }
+
+    if (maxCombo >= 10) {
+      return {
+        title: "Manager: Phenomenal Work!",
+        text: `Outstanding ${maxCombo} combo! Your lightning-fast checking speed is at an Area Manager level!`
+      };
+    }
+
+    if (qCount <= 3) {
+      return {
+        title: "Manager's Sigh: Don't Rush!",
+        text: "Slow down! Make sure to carefully subtract the price tag number from the expiration date!"
+      };
+    }
+
+    if (finalScore >= 1000) {
+      return {
+        title: "Manager: Great Staff Member!",
+        text: `Impressive score of ${finalScore} pt! You are keeping our shelves clean and preventing product loss!`
+      };
+    }
+
+    return {
+      title: "Manager's Feedback",
+      text: "Nice try! Watch out for Uchi Café desserts and long-shelf items with '-030' tags. Keep practice going!"
+    };
+  }
+
+  function updateLivesUI() {
+    let livesText = "";
+    for (let i = 0; i < 2; i++) {
+      livesText += i < lives ? "❤️" : "💔";
+    }
+    document.getElementById('lives-display').innerText = livesText;
+  }
+
+  function showModeSelect() {
+    document.getElementById('screen-title').style.display = 'none';
+    document.getElementById('screen-result').style.display = 'none';
+    document.getElementById('screen-mode').style.display = 'flex';
+  }
+
+  function showModeSelectFromResult() {
+    document.getElementById('screen-result').style.display = 'none';
+    document.getElementById('screen-mode').style.display = 'flex';
+  }
+
+  function showTitleScreen() {
+    document.getElementById('screen-mode').style.display = 'none';
+    document.getElementById('screen-result').style.display = 'none';
+    document.getElementById('screen-title').style.display = 'flex';
+  }
+
+  function startGame(mode) {
+    currentMode = mode;
+    score = 0;
+    combo = 0;
+    maxCombo = 0;
+    lives = 2;
+    questionCount = 0;
+    isProcessing = false;
+    
+    if (currentMode === 'trainee') {
+      document.getElementById('score-board').style.display = 'none';
+    } else {
+      document.getElementById('score').innerText = '0';
+      document.getElementById('score-board').style.display = 'flex';
+    }
+
+    document.getElementById('overlay-main').style.display = 'none';
+    document.getElementById('header-title').innerText = `Lawson Checker (${getModeName(mode)})`;
+    
+    const timerContainer = document.getElementById('timer-container');
+    if (currentMode === 'trainee') {
+      timerContainer.innerHTML = `
+        <button class="exit-trainee-btn" onclick="endGame()">🚪 Exit Training</button>
+      `;
+    } else {
+      timerContainer.innerHTML = '<div class="timer-bar" id="timer-bar"></div>';
+    }
+
+    updateLivesUI();
+    updateComboUI();
+    generateQuestion();
+
+    clearInterval(timerInterval);
+    if (currentMode !== 'trainee') {
+      timerInterval = setInterval(() => {
+        if (!isProcessing) {
+          timeLeft -= 0.1;
+          const percent = (timeLeft / currentMaxTime) * 100;
+          const bar = document.getElementById('timer-bar');
+          if (bar) bar.style.width = `${Math.max(0, percent)}%`;
+
+          if (timeLeft <= 0) {
+            isProcessing = true;
+            setButtonsDisabled(true);
+            handleMistake("⏰ Time's Up!");
+          }
+        }
+      }, 100);
+    }
+  }
+
+  function endGame() {
+    clearInterval(timerInterval);
+    playSound('gameover');
+
+    document.getElementById('score-board').style.display = 'none';
+    document.getElementById('final-score-display').innerText = `${score} pt`;
+    document.getElementById('final-combo-display').innerText = `Max Combo: ${maxCombo} COMBO`;
+
+    const commentary = getCommentary(currentMode, score, maxCombo, questionCount);
+    document.getElementById('commentary-title').innerText = commentary.title;
+    document.getElementById('commentary-text').innerText = commentary.text;
+
+    const overlay = document.getElementById('overlay-main');
+    overlay.style.display = 'flex';
+    document.getElementById('screen-title').style.display = 'none';
+    document.getElementById('screen-mode').style.display = 'none';
+    document.getElementById('screen-result').style.display = 'flex';
+  }
+
+  function setButtonsDisabled(disabled) {
+    document.getElementById('btn-safe').disabled = disabled;
+    document.getElementById('btn-out').disabled = disabled;
+    document.getElementById('btn-missed').disabled = disabled;
+  }
+
+  function generateQuestion() {
+    isProcessing = false;
+    setButtonsDisabled(false);
+    questionCount++;
+
+    document.getElementById('result-title').innerText = `Question ${questionCount}`;
+    document.getElementById('result-title').style.color = "#888";
+    document.getElementById('result-text').innerText = "";
+    document.getElementById('current-date').innerText = formatDate(baseToday);
+
+    let item;
+    if (currentMode === 'trainee') {
+      item = standardPool[Math.floor(Math.random() * standardPool.length)];
+      isDesert = !!item.isDesert;
+      isLongTermItem = !!item.isLongTerm;
+      currentMaxTime = 999;
+    } else {
+      if (questionCount > 5 && Math.random() < 0.25) {
+        item = longTermPool[Math.floor(Math.random() * longTermPool.length)];
+      } else {
+        item = standardPool[Math.floor(Math.random() * standardPool.length)];
+      }
+      isDesert = !!item.isDesert;
+      isLongTermItem = !!item.isLongTerm;
+
+      if (questionCount <= 5) {
+        currentMaxTime = isDesert ? 3.5 : 6.0;
+      } else if (questionCount <= 10) {
+        currentMaxTime = isDesert ? 2.5 : 4.5;
+      } else {
+        currentMaxTime = isDesert ? 1.8 : 3.5;
+      }
+    }
+
+    const ruleDays = item.rules[Math.floor(Math.random() * item.rules.length)];
+    timeLeft = currentMaxTime;
+    
+    const bar = document.getElementById('timer-bar');
+    if (bar) bar.style.width = '100%';
+
+    document.getElementById('item-name').innerText = item.name + (isDesert ? " ⚡Fast!" : "");
+    document.getElementById('item-price').innerHTML = `¥${item.price} <span style="font-size:11px; font-weight:normal;">(Tax incl. ¥${Math.floor(item.price * 1.08)})</span>`;
+    
+    const ruleText = `-0${ruleDays < 10 ? '0' + ruleDays : ruleDays}`;
+    document.getElementById('price-card-rule').innerText = ruleText;
+
+    let offsetDays = 0;
+    const type = Math.random();
+
+    if (type < 0.4) {
+      offsetDays = ruleDays + Math.floor(Math.random() * 6) + 1;
+    } else if (type < 0.7) {
+      offsetDays = ruleDays;
+    } else {
+      offsetDays = ruleDays - (Math.floor(Math.random() * 5) + 1);
+    }
+
+    const expDate = new Date(baseToday.getTime());
+    expDate.setDate(baseToday.getDate() + offsetDays);
+    
+    document.getElementById('item-exp').innerText = formatDate(expDate);
+
+    const targetDate = new Date(expDate.getTime());
+    targetDate.setDate(expDate.getDate() - ruleDays);
+
+    const diffDays = Math.round((baseToday.getTime() - targetDate.getTime()) / (1000 * 3600 * 24));
+
+    if (diffDays === 0) {
+      correctState = "OUT";
+      correctReason = isLongTermItem 
+        ? `⚠️ Don't miss -030 items! Discard Date = Exp Date minus 30 days = Today (${formatDate(baseToday)}).`
+        : `Discard Date = Exp Date minus ${ruleDays} day(s) = Today (${formatDate(baseToday)}). Pull it tonight!`;
+    } else if (diffDays > 0) {
+      correctState = "MISSED";
+      if (isDesert) {
+        correctReason = `😱 Overdue dessert! This should have been removed on ${formatDate(targetDate)}.`;
+      } else if (isLongTermItem) {
+        correctReason = `⚠️ Overdue -030 item! It was due for removal back on ${formatDate(targetDate)}.`;
+      } else {
+        correctReason = `Overdue item! This was due for removal on ${formatDate(targetDate)}.`;
+      }
+    } else {
+      correctState = "SAFE";
+      correctReason = `Discard date is ${formatDate(targetDate)}. Today is before that, so keep it on shelf!`;
+    }
+  }
+
+  function updateComboUI() {
+    const badge = document.getElementById('combo-badge');
+    badge.innerText = `${combo} COMBO`;
+    if (combo >= 3) {
+      badge.classList.add('active');
+    } else {
+      badge.classList.remove('active');
+    }
+  }
+
+  function handleMistake(customTitle) {
+    playSound('incorrect');
+    combo = 0;
+    lives--;
+    updateLivesUI();
+
+    const titleEl = document.getElementById('result-title');
+    const textEl = document.getElementById('result-text');
+
+    titleEl.innerText = customTitle || "❌ Incorrect...";
+    titleEl.style.color = '#dc3545';
+    textEl.innerText = correctReason;
+
+    updateComboUI();
+
+    if (lives <= 0) {
+      setTimeout(endGame, 1500);
+    } else {
+      setTimeout(generateQuestion, 1600);
+    }
+  }
+
+  function checkAnswer(userChoice) {
+    if ((timeLeft <= 0 && currentMode !== 'trainee') || isProcessing) return;
+    isProcessing = true;
+    setButtonsDisabled(true);
+
+    const titleEl = document.getElementById('result-title');
+    const textEl = document.getElementById('result-text');
+    
+    if (userChoice === correctState) {
+      combo++;
+      if (combo > maxCombo) maxCombo = combo;
+
+      if (combo > 0 && (combo % 3 === 0)) {
+        playSound('rookie-combo');
+      } else {
+        playSound('correct');
+      }
+
+      if (userChoice === 'MISSED') {
+        setTimeout(() => { playSound('nani'); }, 400);
+      }
+      
+      const baseEarned = isLongTermItem ? 150 : (isDesert ? 120 : 100);
+      const comboBonus = Math.min(combo * 20, 200);
+      const earned = baseEarned + comboBonus;
+      
+      if (currentMode !== 'trainee') {
+        score += earned;
+        document.getElementById('score').innerText = score;
+      }
+
+      titleEl.innerText = currentMode === 'trainee' ? `⭕ Correct!` : `⭕ Correct! (+${earned}pt)`;
+      titleEl.style.color = '#28a745';
+      textEl.innerText = correctReason;
+
+      updateComboUI();
+      setTimeout(generateQuestion, 1500);
+    } else {
+      handleMistake("❌ Incorrect...");
+    }
+  }
+</script>
+
+</body>
+</html>
